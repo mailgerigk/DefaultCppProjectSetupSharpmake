@@ -48,28 +48,28 @@ public abstract class BaseProject : Project
 
         if (BaseConfiguration.IsCPP)
         {
-            if (UsePrecompiledHeaders)
-            {
-                conf.PrecompHeader = conf.PrecompHeader == null ? $"{Name}_stdafx.hpp" : conf.PrecompHeader;
-                conf.PrecompSource = conf.PrecompSource == null ? $"{Name}_stdafx.cpp" : conf.PrecompSource;
-            }
-
             var absoluteSourceRootPath = Path.GetFullPath(SourceRootPath);
             if (!Directory.Exists(absoluteSourceRootPath))
             {
                 Directory.CreateDirectory(absoluteSourceRootPath);
             }
 
-            var precompHeaderPath = Path.Combine(absoluteSourceRootPath, conf.PrecompHeader);
-            if (!File.Exists(precompHeaderPath) && UsePrecompiledHeaders)
+            if (UsePrecompiledHeaders)
             {
-                File.WriteAllText(precompHeaderPath, $"#pragma once{Environment.NewLine}");
-            }
+                conf.PrecompHeader = conf.PrecompHeader == null ? $"{Name}_stdafx.hpp" : conf.PrecompHeader;
+                conf.PrecompSource = conf.PrecompSource == null ? $"{Name}_stdafx.cpp" : conf.PrecompSource;
 
-            var precompSourcePath = Path.Combine(absoluteSourceRootPath, conf.PrecompSource);
-            if (!File.Exists(precompSourcePath) && UsePrecompiledHeaders)
-            {
-                File.WriteAllText(precompSourcePath, $"#include \"{conf.PrecompHeader}\"{Environment.NewLine}");
+                var precompHeaderPath = Path.Combine(absoluteSourceRootPath, conf.PrecompHeader);
+                if (!File.Exists(precompHeaderPath) && UsePrecompiledHeaders)
+                {
+                    File.WriteAllText(precompHeaderPath, $"#pragma once{Environment.NewLine}");
+                }
+
+                var precompSourcePath = Path.Combine(absoluteSourceRootPath, conf.PrecompSource);
+                if (!File.Exists(precompSourcePath) && UsePrecompiledHeaders)
+                {
+                    File.WriteAllText(precompSourcePath, $"#include \"{conf.PrecompHeader}\"{Environment.NewLine}");
+                }
             }
         }
     }

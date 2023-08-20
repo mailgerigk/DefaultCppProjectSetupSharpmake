@@ -29,21 +29,28 @@ public abstract class VendorProject : BaseProject
         conf.SourceFilesCompileAsCPPRegex.Clear();
 
         conf.IncludePaths.Clear();
-        foreach (var directory in Directory.GetDirectories(SourceRootPath, "include", SearchOption.AllDirectories))
+    }
+
+    public static void AddToConfiguration<T>(Configuration conf, Target target) where T : VendorProject, new()
+    {
+        var t = new T();
+        var sourceRootPath = t.SourceRootPath;
+
+        foreach (var directory in Directory.GetDirectories(sourceRootPath, "include", SearchOption.AllDirectories))
         {
             conf.IncludePaths.Add(directory);
         }
 
-        var libraryPaths = new HashSet<string>();
-        var libraryFiles = new HashSet<string>();
-        foreach (var directory in Directory.GetDirectories(SourceRootPath, "*", SearchOption.AllDirectories))
+        bool foundLibrariesInPlatformFolder = false;
+        foreach (var directory in Directory.GetDirectories(sourceRootPath, "*", SearchOption.AllDirectories))
         {
             if (directory.Contains(target.Platform == Platform.win32 ? "x86" : "x64"))
             {
                 foreach (var file in Directory.GetFiles(directory, "*.lib", SearchOption.AllDirectories))
                 {
-                    libraryPaths.Add(Path.GetDirectoryName(file));
-                    libraryFiles.Add(Path.GetFileNameWithoutExtension(file));
+                    conf.LibraryPaths.Add(Path.GetDirectoryName(file));
+                    conf.LibraryFiles.Add(Path.GetFileNameWithoutExtension(file));
+                    foundLibrariesInPlatformFolder = true;
                 }
                 foreach (var file in Directory.GetFiles(directory, "*.dll", SearchOption.AllDirectories))
                 {
@@ -52,14 +59,14 @@ public abstract class VendorProject : BaseProject
             }
         }
         // no libraryPaths found that contain either x86 or x64, try just a lib folder then
-        if (!libraryPaths.Any())
+        if (!foundLibrariesInPlatformFolder)
         {
-            foreach (var directory in Directory.GetDirectories(SourceRootPath, "lib", SearchOption.AllDirectories))
+            foreach (var directory in Directory.GetDirectories(sourceRootPath, "lib", SearchOption.AllDirectories))
             {
                 foreach (var file in Directory.GetFiles(directory, "*.lib", SearchOption.AllDirectories))
                 {
-                    libraryPaths.Add(Path.GetDirectoryName(file));
-                    libraryFiles.Add(Path.GetFileNameWithoutExtension(file));
+                    conf.LibraryPaths.Add(Path.GetDirectoryName(file));
+                    conf.LibraryFiles.Add(Path.GetFileNameWithoutExtension(file));
                 }
                 foreach (var file in Directory.GetFiles(directory, "*.dll", SearchOption.AllDirectories))
                 {
@@ -67,8 +74,5 @@ public abstract class VendorProject : BaseProject
                 }
             }
         }
-
-        conf.LibraryPaths.AddRange(libraryPaths);
-        conf.LibraryFiles.AddRange(libraryFiles);
     }
 }

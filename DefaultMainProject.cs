@@ -38,12 +38,12 @@ public abstract class DefaultMainProject : BaseProject
         if (RaylibProject.CanAdd)
         {
             conf.LibraryFiles.Add("opengl32");
-            conf.AddPrivateDependency<RaylibProject>(target);
+            VendorProject.AddToConfiguration<RaylibProject>(conf, target);
         }
         if (SDL2Project.CanAdd)
         {
             conf.LibraryFiles.Add("opengl32");
-            conf.AddPrivateDependency<SDL2Project>(target);
+            VendorProject.AddToConfiguration<SDL2Project>(conf, target);
         }
 
         base.Configure(conf, target);
